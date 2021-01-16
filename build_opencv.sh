@@ -63,10 +63,8 @@ install_dependencies () {
     # package repository or should already be installed (eg. CUDA).
     echo "Installing build dependencies."
     # well, shit, they fixed it, so we do this to get the certs temporarily
-    mv /etc/apt/sources.list.d/nvidia-l4t-apt-source.list /etc/apt/
-    apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates
-    mv /etc/apt/nvidia-l4t-apt-source.list /etc/apt/sources.list.d
+    apt-get update || true
+    apt-get install -y --upgrade --no-install-recommends ca-certificates
     apt-get update && apt-get install -y --no-install-recommends \
         gosu \
         cuda-compiler-10-2 \
