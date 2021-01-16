@@ -11,26 +11,9 @@ cleanup () {
     echo "REMOVING build files"
     rm -rf ${BUILD_TMP}
 
-    echo "REMOVING build dependencies"
-    apt-get purge -y --autoremove \
-        gosu \
-        build-essential \
-        ca-certificates \
-        cmake \
-        git \
-        cuda-compiler-10-2 \
-        cuda-minimal-build-10-2 \
-        cuda-libraries-dev-10-2 \
-        libcudnn8-dev \
-        python3-dev
-    # there are probably more -dev packages that can be removed if the 
-    # runtime packages are explicitly added below in install_dependencies
-    # but the above ones I know offhand can be removed without breaking open_cv
-    # TODO(mdegans): separate more build and runtime deps, purge build deps
-
     # this shaves about 20Mb off the image
     echo "REMOVING apt cache and lists"
-    apt-get clean
+    apt-get clean autoclean -y
     rm -rf /var/lib/apt/lists/*
 
     echo "REMOVING builder user and any owned files"
