@@ -15,21 +15,15 @@ cleanup () {
     echo "REMOVING apt cache and lists"
     apt-get clean autoclean -y
     rm -rf /var/lib/apt/lists/*
-
-    echo "REMOVING builder user and any owned files"
-    deluser --remove-all-files builder
 }
 
 setup () {
     echo "CREATING new builder user to build opencv"
-    adduser --system --group --no-create-home builder
     if [[ -d ${BUILD_TMP} ]] ; then
         echo "WARNING: It appears an existing build exists in /tmp/build_opencv"
         cleanup
     fi
-    mkdir -p ${BUILD_TMP} && chown builder:builder ${BUILD_TMP}
-    echo "CREATING symlink to /usr/local/cuda"
-    ln -s /usr/local/cuda-10.0 /usr/local/cuda
+    mkdir -p ${BUILD_TMP}
     echo "ADDING /usr/local/cuda/bin to PATH"
     PATH=/usr/local/cuda/bin:$PATH
 }
@@ -37,8 +31,8 @@ setup () {
 git_source () {
     cd ${BUILD_TMP}
     echo "CLONING version '$1' of OpenCV"
-    gosu builder git clone --depth 1 --branch "$1" https://github.com/opencv/opencv.git
-    gosu builder git clone --depth 1 --branch "$1" https://github.com/opencv/opencv_contrib.git
+    git clone --depth 1 --branch "$1" https://github.com/opencv/opencv.git
+    git clone --depth 1 --branch "$1" https://github.com/opencv/opencv_contrib.git
 }
 
 install_dependencies () {
@@ -125,9 +119,9 @@ configure () {
     echo "cmake flags: ${CMAKEFLAGS}"
 
     cd ${BUILD_TMP}/opencv
-    mkdir build && chown builder:builder build
+    mkdir build
     cd build
-    gosu builder cmake ${CMAKEFLAGS} ..
+    cmake ${CMAKEFLAGS} ..
 }
 
 main () {
@@ -150,11 +144,11 @@ main () {
     configure
 
     # start the build
-    gosu builder make -j${OPENCV_BUILD_JOBS}
+    make -j${OPENCV_BUILD_JOBS}
 
     if [[ ${OPENCV_DO_TEST} == "TRUE" ]] ; then
         echo "MAKING tests"
-        gosu builder make test  # (make and) run the tests
+        make test  # (make and) run the tests
     fi
 
     make install
